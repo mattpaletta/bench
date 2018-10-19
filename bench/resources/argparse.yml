@@ -1,0 +1,33 @@
+testing:
+
+  change_threshold:
+    default: 5.0
+    help: "How much variability is allowed between tests"
+
+  testing_dir:
+    default: "."
+    required: False
+    help: "Root directory for tests"
+
+  results_dir:
+    default: "results"
+    required: False
+    help: "Directory to put results collected."
+
+  plot:
+    default: True
+    help: "Boolean flag indicating whether should plot graphs"
+
+  git:
+    default: ""
+    required: False
+    help: "Git repository to test, must have clone access"
+
+  auto_skip:
+    default: True
+    help: "Automatically skip the problems that have already have results."
+    required: False
+
+  sample_size:
+    default: 10
+    required: False
