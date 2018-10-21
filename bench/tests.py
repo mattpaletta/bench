@@ -4,29 +4,16 @@ import time
 import docker
 from docker.models.containers import Container
 
-from bench.analysis import analyze_data
+from bench.analysis import analyze_data, avg
 from bench.bdocker import generate_docker_file, build_docker_image
 from bench.types import TestResult
 
 
-def avg(lst):
-    return sum(lst) / len(list(lst))
-
-
-def __get_tests(root_dir):
+def get_tests(root_dir):
     for root, dir, files in os.walk(root_dir):
         # Don't include the root directory, and only include top-level directories.
         if root != "." and len(root.split("/")) == 2:
             yield root, files
-
-
-def __get_lang(file):
-    ending = file.split(".")[-1]
-    if ending == "py":
-        yield "python"
-        yield "pypy"
-    elif ending == "go":
-        yield "go"
 
 
 def run_benchmark(client, container_settings, bench_image, bench_test_command):
@@ -110,10 +97,10 @@ def run_sample(client, current_iteration,
 
         logging.info("Saving results")
         return TestResult(time_taken = test_time,
-                                       test_time = avg([before_benchmark, after_benchmark]),
-                                       iteration = current_iteration - 1,
-                                       status = test_exit_code,
-                                       system_info = processed_stats)
+                          test_time = avg([before_benchmark, after_benchmark]),
+                          iteration = current_iteration - 1,
+                          status = test_exit_code,
+                          system_info = processed_stats)
 
 
 def run_tests(root_dir, AUTO_SKIP, docker_image_prefix,
@@ -123,7 +110,7 @@ def run_tests(root_dir, AUTO_SKIP, docker_image_prefix,
     client = docker.client.from_env()
 
     logging.info("Finding tests.")
-    for test, files in __get_tests(root_dir):
+    for test, files in get_tests(root_dir):
         logging.info("Found test: {0}".format(test))
         for dockerfile, test_command, entry_command, file in generate_docker_file(test, files):
             if entry_command.startswith("./"):

@@ -8,7 +8,6 @@ import pandas as pd
 from matplotlib import pyplot as plt
 
 from bench.chain import chain
-from bench.tests import avg
 from bench.types import TestResult
 
 
@@ -229,3 +228,7 @@ def plot_overall_run(overall_run_csv, plot_dir, plot_name):
             plt.savefig(plot_output)
             # plt.show()
             plt.close()
+
+
+def avg(lst):
+    return sum(lst) / len(list(lst))

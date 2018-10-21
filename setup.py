@@ -23,7 +23,9 @@ except ImportError:
 requirements = []
 with open('requirements.txt', "r") as requirements_file:
     for line in requirements_file:
-        requirements.append(line)
+        requirements.append(line.strip())
+
+# requirements.append("git+git://github.com/mattpaletta/configparser.git#egg=configparser")
 
 setup(
         name = "bench",
@@ -49,5 +51,5 @@ setup(
                 'bench = bench.bench:main',
             ]
         },
-        package_data={'bench': ['resources', 'argparse.yaml']},
+        package_data={'bench': ['resources/argparse.yml']},
 )

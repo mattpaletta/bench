@@ -5,6 +5,7 @@ import tempfile
 
 from configs.parser import Parser
 from git import Repo
+from pkg_resources import resource_filename
 
 from bench.tests import run_tests
 
@@ -21,7 +22,10 @@ def __configure_logging():
 
 
 def main():
-    p = Parser("resources/argparse.yml").get()
+    if os.path.exists("resources/argparse.yml"):
+        p = Parser(os.path.join("resources", "argparse.yml")).get()
+    else:
+        p = Parser(resource_filename("bench", "resources/argparse.yml")).get()
 
     if p["git"] is not None and p["git"] != "":
         cloned_dir = tempfile.gettempdir()

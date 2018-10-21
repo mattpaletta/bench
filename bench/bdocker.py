@@ -4,8 +4,6 @@ import pickle
 
 from docker.errors import APIError, BuildError
 
-from bench.tests import __get_lang
-
 
 def determine_auto_skip(configs):
     # We have a cache.
@@ -48,7 +46,7 @@ def build_docker_image(docker_image_prefix, client, dockerfile, test_file):
 def generate_docker_file(root, files):
     for file in files:
         # Could build with multiple executables. (like pypy and python)
-        for lang in __get_lang(file):
+        for lang in get_lang(file):
             if lang == "go":
                 root_container = "golang:1.11.1-alpine"
                 entry_command = "go run {0}".format(file)
@@ -112,3 +110,12 @@ def generate_docker_file(root, files):
             with open("images/" + output_dockerfile_name, "w+") as output_dockerfile:
                 output_dockerfile.write("\n".join(dockerfile_contents))
             yield "images/" + output_dockerfile_name, test_command, entry_command, file
+
+
+def get_lang(file):
+    ending = file.split(".")[-1]
+    if ending == "py":
+        yield "python"
+        yield "pypy"
+    elif ending == "go":
+        yield "go"
