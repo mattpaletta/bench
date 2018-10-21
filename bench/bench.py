@@ -1,20 +1,12 @@
-import argparse
-import collections
 import logging
 import os
-import pickle
 import sys
-import time
-from typing import List
+import tempfile
 
 from configs.parser import Parser
-from matplotlib import pyplot as plt
-import docker
-import pandas as pd
-import yaml
+from git import Repo
 
-from docker.errors import BuildError, APIError
-from docker.models.containers import Container
+from bench.tests import run_tests
 
 
 def __configure_logging():
@@ -28,9 +20,26 @@ def __configure_logging():
     root.addHandler(ch)
 
 
-
 def main():
     p = Parser("resources/argparse.yml").get()
+
+    if p["git"] is not None and p["git"] != "":
+        cloned_dir = tempfile.gettempdir()
+        Repo.clone_from(p["git"], cloned_dir)
+        if p["testing_dir"] != "./":
+            root_dir = os.path.join(cloned_dir, p["testing_dir"])
+        else:
+            root_dir = cloned_dir
+    else:
+        root_dir = p["testing_dir"]
+
+    run_tests(root_dir = root_dir,
+              AUTO_SKIP = p["auto_skip"],
+              docker_image_prefix = p["docker_image_prefix"],
+              SIZE_OF_SAMPLE = p["sample_size"],
+              CHANGE_THRESHOLD = p["change_threshold"],
+              RESULTS_DIR = p["results_dir"],
+              SHOULD_PLOT = p["plot"])
 
 
 if __name__ == "__main__":

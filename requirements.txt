@@ -3,3 +3,4 @@ PyYAML
 pandas
 matplotlib
 git+git://github.com/mattpaletta/configparser.git
+gitpython

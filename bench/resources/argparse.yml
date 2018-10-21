@@ -31,3 +31,7 @@ testing:
   sample_size:
     default: 10
     required: False
+
+  docker_image_prefix:
+    default: "bench"
+    required: False

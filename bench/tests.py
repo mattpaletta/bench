@@ -1,11 +1,10 @@
 import logging
 import os
 import time
-
 import docker
-from docker.errors import BuildError, APIError
 from docker.models.containers import Container
 
+from bench.analysis import analyze_data
 from bench.bdocker import generate_docker_file, build_docker_image
 from bench.types import TestResult
 
@@ -118,11 +117,10 @@ def run_sample(client, current_iteration,
 
 
 def run_tests(root_dir, AUTO_SKIP, docker_image_prefix,
-              SIZE_OF_SAMPLE, CHANGE_THRESHOLD):
+              SIZE_OF_SAMPLE, CHANGE_THRESHOLD, RESULTS_DIR, SHOULD_PLOT):
     logging.info("Getting docker client")
 
     client = docker.client.from_env()
-    all_test_data = []
 
     logging.info("Finding tests.")
     for test, files in __get_tests(root_dir):
@@ -141,9 +139,11 @@ def run_tests(root_dir, AUTO_SKIP, docker_image_prefix,
             if AUTO_SKIP and os.path.exists(first_run_csv) and os.path.exists(overall_run_csv):
                 logging.info("Test already run.  Skipping. (FROM AUTO_SKIP")
                 continue
+
             docker_image_name, success = build_docker_image(docker_image_prefix,
                                                        client,
                                                        dockerfile, test_file)
+
             if not success:
                 logging.warning("Building image failed.")
                 continue
@@ -160,3 +160,16 @@ def run_tests(root_dir, AUTO_SKIP, docker_image_prefix,
                                                test_command,
                                                SIZE_OF_SAMPLE,
                                                CHANGE_THRESHOLD))
+
+            base_plot_name = test[2:] + "_{0}_" + entry_command.split(" ")[0] + "_" + test_file
+
+            first_run_plot_base_name = base_plot_name.format("first")
+            overall_run_base_plot_name = base_plot_name.format("overall")
+
+            analyze_data(test_results,
+                         RESULTS_DIR,
+                         first_run_csv,
+                         overall_run_csv,
+                         first_run_plot_base_name,
+                         overall_run_base_plot_name,
+                         SHOULD_PLOT)
