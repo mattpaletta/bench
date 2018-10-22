@@ -10,10 +10,15 @@ from bench.types import TestResult
 
 
 def get_tests(root_dir):
+    logging.debug("Scanning: " + root_dir)
+
     for root, dir, files in os.walk(root_dir):
         # Don't include the root directory, and only include top-level directories.
-        if root != "." and len(root.split("/")) == 2:
+        if root != "." and len(root.replace(root_dir, "").split("/")) == 2:
             yield root, files
+        else:
+            logging.debug("Skipping: " + root)
+
 
 
 def run_benchmark(client, container_settings, bench_image, bench_test_command):
@@ -42,7 +47,7 @@ def run_sample(client, current_iteration,
         # Slow down the container, so we can collect more stats.
         container_settings = {
             "cpu_period": 1000,
-            "cpu_quota": 10,
+            "cpu_quota": 1000,
             "cpuset_cpus": "0",
             "stdout": True,
             "stderr": True,
@@ -111,25 +116,30 @@ def run_tests(root_dir, AUTO_SKIP, docker_image_prefix,
 
     logging.info("Finding tests.")
     for test, files in get_tests(root_dir):
-        logging.info("Found test: {0}".format(test))
-        for dockerfile, test_command, entry_command, file in generate_docker_file(test, files):
+        logging.info("Found test: {0}".format(test.replace(root_dir, "")))
+        for dockerfile, test_command, entry_command, file in generate_docker_file(test, files, root_dir):
+
             if entry_command.startswith("./"):
                 test_file = (file.split(" ")[-1]).split(".")[0]  # Get the filename
             else:
                 test_file = (entry_command.split(" ")[-1]).split(".")[0]
 
-            first_run_csv = "results/tables/{0}.csv".format(
-                    test[2:] + "_first_" + entry_command.split(" ")[0] + "_" + test_file)
-            overall_run_csv = "results/tables/{0}.csv".format(
-                    test[2:] + "_" + entry_command.split(" ")[0] + "_" + test_file)
+            base_plot_name = test.replace(root_dir, "")[1:] + "_{0}_" + entry_command.split(" ")[0] + "_" + test_file
+            first_run_plot_base_name = base_plot_name.format("first")
+            overall_run_base_plot_name = base_plot_name.format("overall")
+
+            first_run_csv = RESULTS_DIR + "/tables/{0}.csv".format(first_run_plot_base_name)
+            overall_run_csv = RESULTS_DIR + "/tables/{0}.csv".format(overall_run_base_plot_name)
 
             if AUTO_SKIP and os.path.exists(first_run_csv) and os.path.exists(overall_run_csv):
-                logging.info("Test already run.  Skipping. (FROM AUTO_SKIP")
+                logging.info("Test already run.  Skipping. (FROM AUTO_SKIP)")
                 continue
 
             docker_image_name, success = build_docker_image(docker_image_prefix,
-                                                       client,
-                                                       dockerfile, test_file)
+                                                            client,
+                                                            dockerfile,
+                                                            test_file,
+                                                            root_dir)
 
             if not success:
                 logging.warning("Building image failed.")
@@ -148,10 +158,6 @@ def run_tests(root_dir, AUTO_SKIP, docker_image_prefix,
                                                SIZE_OF_SAMPLE,
                                                CHANGE_THRESHOLD))
 
-            base_plot_name = test[2:] + "_{0}_" + entry_command.split(" ")[0] + "_" + test_file
-
-            first_run_plot_base_name = base_plot_name.format("first")
-            overall_run_base_plot_name = base_plot_name.format("overall")
 
             analyze_data(test_results,
                          RESULTS_DIR,

@@ -38,27 +38,24 @@ def analyze_data(test_results: List[TestResult],
         f1 = executors.submit(analyze_first_run, *(test_results, first_run_csv))
         f2 = executors.submit(analyze_overall, *(test_results, overall_run_csv))
 
-        if should_plot:
-            f3 = chain(executors, f1, functools.partial(plot_data, **{
-                "plot_title": first_run_title,
-                "csv_to_read": first_run_csv,
-                "plot_type": "first",
-                "plot_dir": dirs_to_make[3]
-            }))
+        concurrent.futures.wait([f1, f2], timeout = None, return_when = ALL_COMPLETED)
 
-            f4 = chain(executors, f2, functools.partial(plot_data, **{
+        if should_plot:
+            f3 = executors.submit(plot_data, **{
+                "plot_title" : first_run_title,
+                "csv_to_read": first_run_csv,
+                "plot_type"  : "first_run",
+                "plot_dir"   : dirs_to_make[3]
+            })
+
+            f4 = executors.submit(plot_data, **{
                 "plot_title" : overall_run_title,
                 "csv_to_read": overall_run_csv,
-                "plot_type"  : "overall",
+                "plot_type"  : "overall_run",
                 "plot_dir"   : dirs_to_make[4]
-            }))
-        else:
-            # If not plotting, do nothing.
-            f3 = concurrent.futures.Future()
-            f4 = concurrent.futures.Future()
+            })
 
-        concurrent.futures.wait([f1, f2, f3, f4], timeout = None, return_when = ALL_COMPLETED)
-
+            concurrent.futures.wait([f3, f4], timeout = None, return_when = ALL_COMPLETED)
 
 def analyze_first_run(test_results: List[TestResult], first_run_csv: str):
     logging.info("Processing {0} results".format(len(test_results)))
@@ -160,6 +157,8 @@ def plot_data(plot_title, csv_to_read, plot_type, plot_dir):
         plot_overall_run(overall_run_csv = csv_to_read,
                          plot_dir = plot_dir,
                          plot_name = plot_title)
+    else:
+        logging.warning("Invalid plot type.")
 
 
 def plot_first_run(first_run_csv, plot_dir, plot_name):
@@ -185,6 +184,7 @@ def plot_first_run(first_run_csv, plot_dir, plot_name):
             plot_output = "{0}/{1}_{2}.png".format(plot_dir,
                                                    plot_name,
                                                    column)
+            logging.info("Writing plot: " + plot_output)
 
             if os.path.exists(plot_output):
                 os.remove(plot_output)
@@ -216,6 +216,7 @@ def plot_overall_run(overall_run_csv, plot_dir, plot_name):
             plot_output = "{0}/{1}_{2}.png".format(plot_dir,
                                                    plot_name,
                                                    column)
+            logging.info("Writing plot: " + plot_output)
 
             if os.path.exists(plot_output):
                 os.remove(plot_output)

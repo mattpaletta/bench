@@ -2,6 +2,7 @@ import logging
 import os
 import pickle
 
+import requests
 from docker.errors import APIError, BuildError
 
 
@@ -18,7 +19,7 @@ def determine_auto_skip(configs):
     return should_cache
 
 
-def build_docker_image(docker_image_prefix, client, dockerfile, test_file):
+def build_docker_image(docker_image_prefix, client, dockerfile, test_file, root_dir):
     docker_image = None
 
     docker_image_name = "{0}_{1}_{2}:latest".format(
@@ -29,9 +30,9 @@ def build_docker_image(docker_image_prefix, client, dockerfile, test_file):
 
     try:
         logging.info("Building test image: {0}".format(docker_image_name))
-
-        docker_image, build_logs = client.images.build(path = ".",
-                                                       dockerfile = "./" + dockerfile,
+        logging.debug("path: " + root_dir + " dockerfile: " + os.path.join(root_dir, dockerfile))
+        docker_image, build_logs = client.images.build(path = root_dir,
+                                                       dockerfile = os.path.join(root_dir, dockerfile),
                                                        tag = docker_image_name)
         logging.info("Built image: {0}".format(docker_image_name))
     except BuildError as e:
@@ -40,10 +41,13 @@ def build_docker_image(docker_image_prefix, client, dockerfile, test_file):
     except APIError as e:
         print(e)
         return None, False
-    return docker_image, True
+    except requests.exceptions.ConnectionError:
+        logging.error("Could not connect to docker daemon.")
+        exit(0)
+    return docker_image_name, True
 
 
-def generate_docker_file(root, files):
+def generate_docker_file(root, files, root_dir):
     for file in files:
         # Could build with multiple executables. (like pypy and python)
         for lang in get_lang(file):
@@ -67,12 +71,13 @@ def generate_docker_file(root, files):
             test_file = "baseline.go"
             test_command = "./app"
 
+            # These all have to be relative to the root_dir.
             requirements = ""
             if files.__contains__("requirements.txt"):
-                requirements = os.path.join(root, "requirements.txt")
+                requirements = os.path.join(root.replace(root_dir, ""), "requirements.txt")
 
-            if not os.path.exists("images"):
-                os.mkdir("images")
+            if not os.path.exists(root_dir + "/images"):
+                os.mkdir(root_dir + "/images")
 
             dockerfile_contents = [
                 "FROM {0} as test_builder".format(test_container),
@@ -88,7 +93,7 @@ def generate_docker_file(root, files):
             if lang == "go":
                 dockerfile_contents.append("WORKDIR /go/src/github.com/mattpaletta/Little-Book-Of-Semaphores")
                 dockerfile_contents.append("COPY --from=test_builder /go/src/github.com/mattpaletta/Little-Book-Of-Semaphores/app ./app")
-                dockerfile_contents.append("ADD {0} ./{1}".format(os.path.join(root, file), file))
+                dockerfile_contents.append("ADD {0} ./{1}".format(os.path.join(root.replace(root_dir, ""), file), file))
 
                 dockerfile_contents.append("RUN apk add git")
                 dockerfile_contents.append("RUN go get .")
@@ -99,15 +104,15 @@ def generate_docker_file(root, files):
                 dockerfile_contents.append("WORKDIR /app")
                 dockerfile_contents.append(
                     "COPY --from=test_builder /go/src/github.com/mattpaletta/Little-Book-Of-Semaphores/app ./app")
-                dockerfile_contents.append("ADD {0} /app/{1}".format(os.path.join(root, file), file))
+                dockerfile_contents.append("ADD {0} /app/{1}".format(os.path.join(root.replace(root_dir, ""), file), file))
 
             if requirements != "" and lang in ["pypy", "python"]:
                 dockerfile_contents.append("ADD {0} /app/requirements.txt".format(requirements))
                 dockerfile_contents.append("RUN pip3 install -r requirements.txt")
 
-            output_dockerfile_name = "Dockerfile_{0}_{1}".format(root.strip("./"), lang)
+            output_dockerfile_name = "Dockerfile_{0}_{1}".format(root.replace(root_dir, "").strip("./"), lang)
 
-            with open("images/" + output_dockerfile_name, "w+") as output_dockerfile:
+            with open(root_dir + "/images/" + output_dockerfile_name, "w+") as output_dockerfile:
                 output_dockerfile.write("\n".join(dockerfile_contents))
             yield "images/" + output_dockerfile_name, test_command, entry_command, file
 

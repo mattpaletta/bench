@@ -30,6 +30,7 @@ testing:
 
   sample_size:
     default: 10
+    type: "int"
     required: False
 
   docker_image_prefix:
