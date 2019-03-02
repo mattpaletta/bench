@@ -3,3 +3,4 @@ PyYAML
 pandas
 matplotlib
 gitpython
+config-parser

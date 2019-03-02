@@ -4,7 +4,7 @@ import shutil
 import sys
 import tempfile
 
-from configs.parser import Parser
+from configs import Parser
 from git import Repo
 from pkg_resources import resource_filename
 

@@ -7,11 +7,6 @@ Docker automated testing framework
 pip3 install git+://github.com/mattpaletta/bench.git
 ```
 
-At this time, you also need to manually install 1 dependency:
-```
-pip3 install git+git://github.com/mattpaletta/configparser.git
-```
-
 To view all the parameters: `bench --help`
 
 Example running:
