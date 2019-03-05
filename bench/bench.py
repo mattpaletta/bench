@@ -9,21 +9,11 @@ from git import Repo
 from pkg_resources import resource_filename
 
 from bench.tests import run_tests
-
-
-def __configure_logging():
-    root = logging.getLogger()
-    root.setLevel(logging.INFO)
-
-    ch = logging.StreamHandler(sys.stdout)
-    ch.setLevel(logging.INFO)
-    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s - [%(filename)s:%(lineno)s]')
-    ch.setFormatter(formatter)
-    root.addHandler(ch)
+from pynotstdlib.logging import default_logging
 
 
 def main():
-    __configure_logging()
+    default_logging(logging.INFO)
 
     if os.path.exists("resources/argparse.yml"):
         p = Parser(os.path.join("resources", "argparse.yml")).get()
@@ -44,13 +34,9 @@ def main():
     else:
         root_dir = p["testing_dir"]
 
-    run_tests(root_dir = root_dir,
-              AUTO_SKIP = p["auto_skip"],
-              docker_image_prefix = p["docker_image_prefix"],
-              SIZE_OF_SAMPLE = int(p["sample_size"]),
-              CHANGE_THRESHOLD = p["change_threshold"],
-              RESULTS_DIR = p["results_dir"],
-              SHOULD_PLOT = p["plot"])
+    run_tests(root_dir = root_dir, auto_skip = p["auto_skip"], docker_image_prefix = p["docker_image_prefix"],
+              size_of_sample = int(p["sample_size"]), change_threshold = p["change_threshold"],
+              results_dir = p["results_dir"], should_plot = p["plot"])
 
 
 if __name__ == "__main__":

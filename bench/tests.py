@@ -20,7 +20,6 @@ def get_tests(root_dir):
             logging.debug("Skipping: " + root)
 
 
-
 def run_benchmark(client, container_settings, bench_image, bench_test_command):
     while True:
         # MARK:// Run the 'before benchmark'
@@ -108,8 +107,8 @@ def run_sample(client, current_iteration,
                           system_info = processed_stats)
 
 
-def run_tests(root_dir, AUTO_SKIP, docker_image_prefix,
-              SIZE_OF_SAMPLE, CHANGE_THRESHOLD, RESULTS_DIR, SHOULD_PLOT):
+def run_tests(root_dir: str, auto_skip: bool, docker_image_prefix: str,
+              size_of_sample: int, change_threshold: float, results_dir: str, should_plot = False):
     logging.info("Getting docker client")
 
     client = docker.client.from_env()
@@ -128,10 +127,10 @@ def run_tests(root_dir, AUTO_SKIP, docker_image_prefix,
             first_run_plot_base_name = base_plot_name.format("first")
             overall_run_base_plot_name = base_plot_name.format("overall")
 
-            first_run_csv = RESULTS_DIR + "/tables/{0}.csv".format(first_run_plot_base_name)
-            overall_run_csv = RESULTS_DIR + "/tables/{0}.csv".format(overall_run_base_plot_name)
+            first_run_csv = results_dir + "/tables/{0}.csv".format(first_run_plot_base_name)
+            overall_run_csv = results_dir + "/tables/{0}.csv".format(overall_run_base_plot_name)
 
-            if AUTO_SKIP and os.path.exists(first_run_csv) and os.path.exists(overall_run_csv):
+            if auto_skip and os.path.exists(first_run_csv) and os.path.exists(overall_run_csv):
                 logging.info("Test already run.  Skipping. (FROM AUTO_SKIP)")
                 continue
 
@@ -145,24 +144,23 @@ def run_tests(root_dir, AUTO_SKIP, docker_image_prefix,
                 logging.warning("Building image failed.")
                 continue
 
-            logging.info("Running test: {0} with samples: {1}".format(docker_image_name, SIZE_OF_SAMPLE))
+            logging.info("Running test: {0} with samples: {1}".format(docker_image_name, size_of_sample))
 
             test_results = []
-            for current_test in range(1, SIZE_OF_SAMPLE + 1):
-                logging.info("Starting Test: {0}/{1}".format(current_test, SIZE_OF_SAMPLE))
+            for current_test in range(1, size_of_sample + 1):
+                logging.info("Starting Test: {0}/{1}".format(current_test, size_of_sample))
                 test_results.append(run_sample(client,
                                                current_test,
                                                docker_image_name,
                                                entry_command,
                                                test_command,
-                                               SIZE_OF_SAMPLE,
-                                               CHANGE_THRESHOLD))
-
+                                               size_of_sample,
+                                               change_threshold))
 
             analyze_data(test_results,
-                         RESULTS_DIR,
+                         results_dir,
                          first_run_csv,
                          overall_run_csv,
                          first_run_plot_base_name,
                          overall_run_base_plot_name,
-                         SHOULD_PLOT)
+                         should_plot)

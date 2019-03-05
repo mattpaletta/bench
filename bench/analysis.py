@@ -1,4 +1,3 @@
-import functools
 import logging
 import os
 import concurrent.futures
@@ -6,8 +5,8 @@ from concurrent.futures import ALL_COMPLETED
 from typing import List
 import pandas as pd
 from matplotlib import pyplot as plt
+from pynotstdlib.collection import avg
 
-from bench.chain import chain
 from bench.types import TestResult
 
 
@@ -17,7 +16,7 @@ def analyze_data(test_results: List[TestResult],
                  overall_run_csv: str,
                  first_run_title: str,
                  overall_run_title: str,
-                 should_plot: bool):
+                 should_plot: bool = False):
 
     logging.debug("Making results directories")
 
@@ -45,17 +44,18 @@ def analyze_data(test_results: List[TestResult],
                 "plot_title" : first_run_title,
                 "csv_to_read": first_run_csv,
                 "plot_type"  : "first_run",
-                "plot_dir"   : dirs_to_make[3]
+                "plot_dir"   : dirs_to_make[3] # {0}/figures/first
             })
 
             f4 = executors.submit(plot_data, **{
                 "plot_title" : overall_run_title,
                 "csv_to_read": overall_run_csv,
                 "plot_type"  : "overall_run",
-                "plot_dir"   : dirs_to_make[4]
+                "plot_dir"   : dirs_to_make[4] # {0}/figures/overall
             })
 
             concurrent.futures.wait([f3, f4], timeout = None, return_when = ALL_COMPLETED)
+
 
 def analyze_first_run(test_results: List[TestResult], first_run_csv: str):
     logging.info("Processing {0} results".format(len(test_results)))
@@ -229,7 +229,3 @@ def plot_overall_run(overall_run_csv, plot_dir, plot_name):
             plt.savefig(plot_output)
             # plt.show()
             plt.close()
-
-
-def avg(lst):
-    return sum(lst) / len(list(lst))

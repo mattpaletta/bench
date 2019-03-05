@@ -4,3 +4,4 @@ pandas
 matplotlib
 gitpython
 config-parser
+git+git://github.com/mattpaletta/pynotstdlib.git
