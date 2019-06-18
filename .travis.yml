@@ -11,6 +11,7 @@ python:
 install:
   - pip install mypy
   - pip install -r requirements.txt
+  - pip install .
 
 script:
   - mypy -m bench --strict
