@@ -15,7 +15,7 @@ testing:
     help: "Directory to put results collected."
 
   plot:
-    default: True
+    default: False
     help: "Boolean flag indicating whether should plot graphs"
 
   git:

@@ -1,7 +1,6 @@
 import logging
 import os
 import shutil
-import sys
 import tempfile
 
 from configs import Parser
@@ -12,7 +11,7 @@ from bench.tests import run_tests
 from pynotstdlib.logging import default_logging
 
 
-def main():
+def main() -> None:
     default_logging(logging.INFO)
 
     if os.path.exists("resources/argparse.yml"):

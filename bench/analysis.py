@@ -2,7 +2,7 @@ import logging
 import os
 import concurrent.futures
 from concurrent.futures import ALL_COMPLETED
-from typing import List
+from typing import List, Dict
 import pandas as pd
 from matplotlib import pyplot as plt
 from pynotstdlib.collection import avg
@@ -16,7 +16,7 @@ def analyze_data(test_results: List[TestResult],
                  overall_run_csv: str,
                  first_run_title: str,
                  overall_run_title: str,
-                 should_plot: bool = False):
+                 should_plot: bool = False) -> None:
 
     logging.debug("Making results directories")
 
@@ -57,7 +57,7 @@ def analyze_data(test_results: List[TestResult],
             concurrent.futures.wait([f3, f4], timeout = None, return_when = ALL_COMPLETED)
 
 
-def analyze_first_run(test_results: List[TestResult], first_run_csv: str):
+def analyze_first_run(test_results: List[TestResult], first_run_csv: str) -> None:
     logging.info("Processing {0} results".format(len(test_results)))
 
     if len(test_results) == 0:
@@ -94,7 +94,7 @@ def analyze_first_run(test_results: List[TestResult], first_run_csv: str):
     pd.DataFrame(usage_df).to_csv(first_run_csv)
 
 
-def analyze_overall(test_results: List[TestResult], overall_run_csv):
+def analyze_overall(test_results: List[TestResult], overall_run_csv: str) -> None:
 
     # For the table
     # Test Name and executor run
@@ -113,7 +113,7 @@ def analyze_overall(test_results: List[TestResult], overall_run_csv):
         iteration = result.iteration
         time_taken = result.time_taken
         test_time = result.test_time
-        stats = result.system_info
+        stats: List[Dict[str, Dict[str, Dict[str, int]]]] = result.system_info
 
         # Test_time is the average test time
         normalized_test_time = (1 / test_time) * time_taken
@@ -143,7 +143,7 @@ def analyze_overall(test_results: List[TestResult], overall_run_csv):
     pd.DataFrame(general_df).to_csv(overall_run_csv)
 
 
-def plot_data(plot_title, csv_to_read, plot_type, plot_dir):
+def plot_data(plot_title: str, csv_to_read: str, plot_type: str, plot_dir: str) -> None:
     logging.info("Plotting test results.")
 
     assert plot_type in ["first_run", "overall_run"], "Invalid plot type."
@@ -161,7 +161,7 @@ def plot_data(plot_title, csv_to_read, plot_type, plot_dir):
         logging.warning("Invalid plot type.")
 
 
-def plot_first_run(first_run_csv, plot_dir, plot_name):
+def plot_first_run(first_run_csv: str, plot_dir: str, plot_name: str) -> None:
     if not os.path.exists(first_run_csv):
         logging.warning("First run CSV not found.")
     else:
@@ -199,7 +199,7 @@ def plot_first_run(first_run_csv, plot_dir, plot_name):
             plt.close()
 
 
-def plot_overall_run(overall_run_csv, plot_dir, plot_name):
+def plot_overall_run(overall_run_csv: str, plot_dir: str, plot_name: str) -> None:
     if not os.path.exists(overall_run_csv):
         logging.warning("Overall run CSV not found.")
     else:

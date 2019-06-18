@@ -33,7 +33,7 @@ setup(
         url = 'https://github.com/mattpaletta/bench',
         packages = find_packages(),
         include_package_data = True,
-        install_requires = requirements,
+        # install_requires = requirements,
         author = "Matthew Paletta",
         author_email = "mattpaletta@gmail.com",
         description = "Benchmarking library.",
@@ -51,5 +51,6 @@ setup(
                 'bench = bench.bench:main',
             ]
         },
-        package_data={'bench': ['resources/argparse.yml']},
+        package_data={'bench': ['resources/argparse.yml',
+                                'resources/benchmark.cpp']},
 )
