@@ -1,0 +1,7 @@
+FROM ubuntu:18.10 AS clang
+RUN apt-get update -y && apt-get install -y clang-7 lldb-7 lld-7 clang++-7
+FROM clang as builder
+ADD benchmark.cpp /benchmark.cpp
+RUN clang++-7 -x c++ /benchmark.cpp -o benchmark -static
+FROM scratch
+COPY --from=builder /benchmark /benchmark

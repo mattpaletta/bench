@@ -1,0 +1,4 @@
+docker
+pandas
+matplotlib
+git+git://github.com/mattpaletta/pynotstdlib.git

@@ -15,4 +15,10 @@ install:
 
 script:
   - mypy -m bench --strict
-  - examples/little-book-of-semaphores.sh 
+
+  # Run the little-book-of-semaphores example (remote execution)
+  - examples/little-book-of-semaphores.sh
+
+  # Run the local examples
+  - pip install -r examples/local_test/src/requirements.txt
+  - cd examples/local_test && python3 run_test.py
