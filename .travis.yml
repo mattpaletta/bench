@@ -20,7 +20,7 @@ script:
   - mypy -m bench --strict
 
   # Run the little-book-of-semaphores example (remote execution)
-  - if [ $LITTLE_BOOK == 1]; then examples/little-book-of-semaphores.sh; fi
+  - if [ $LITTLE_BOOK == 1 ]; then examples/little-book-of-semaphores.sh; fi
 
   # Run the local examples
   - if [ $LOCAL_EXAMPLES == 1 ]; then pip install -r examples/local_test/requirements.txt; fi
