@@ -76,7 +76,12 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    int arr[] = {12, 11, 13, 5, 6, 7};
-	int arr_size = sizeof(arr) / sizeof(arr[0]);
+    int arr[atoi(argv[1])];
+    for (int i = 0; i < std::atoi(argv[1]); i++) {
+        arr[i] = i;
+    }
+    std::cout << arr << std::endl;
+
+    int arr_size = sizeof(arr) / sizeof(arr[0]);
     mergeSort(arr, 0, arr_size - 1);
 }

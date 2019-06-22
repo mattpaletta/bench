@@ -17,5 +17,4 @@ COPY --from=builder /build/.build/x86_64-unknown-linux/debug/merge /usr/bin/
 RUN tar -xzvf /tmp/swift_libs.tar.gz && \
     rm -rf /tmp/*
 
-CMD ["merge"]
-#CMD ["swift-multistage-test"]
+ENTRYPOINT ["merge"]

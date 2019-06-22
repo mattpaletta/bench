@@ -1,6 +1,7 @@
 import logging
 import os
 import pickle
+import shutil
 from typing import Dict, Union, Tuple, Optional, Iterator, List
 
 import docker
@@ -33,7 +34,7 @@ def build_docker_image(docker_image_name: str,
         logging.info("Building test image: {0}".format(docker_image_name))
         logging.debug("path: " + root_dir + " dockerfile: " + os.path.join(root_dir, dockerfile))
         docker_image, build_logs = client.images.build(path = root_dir,
-                                                       dockerfile = os.path.join(root_dir, dockerfile),
+                                                       dockerfile = dockerfile,
                                                        tag = docker_image_name)
         logging.info("Built image: {0}".format(docker_image_name))
     except BuildError as e:
@@ -77,7 +78,9 @@ def get_default_bench_image(root_dir: str, client: DockerClient) -> str:
     else:
         benchmark_file = resource_filename("bench", "resources/benchmark.cpp")
 
-    benchmark_dir = os.path.dirname(benchmark_file)
+    shutil.copy(src = benchmark_file, dst = os.path.join(root_dir, "images", "benchmark.cpp"))
+
+    benchmark_dir = os.path.abspath(os.path.dirname(benchmark_file))
 
     cpp = langs.CPP()
 
@@ -100,8 +103,8 @@ def get_default_bench_image(root_dir: str, client: DockerClient) -> str:
         logging.debug("Creating benchmark image with steps: {0}".format(len(dockerfile_contents)))
         name, success = build_docker_image(docker_image_name = "benchmark:latest",
                                            client = client,
-                                           dockerfile = root_dir + "/images/benchmark_Dockerfile",
-                                           root_dir = benchmark_dir)
+                                           dockerfile = "benchmark_Dockerfile",
+                                           root_dir = root_dir + "/images/")
         if name is None:
             raise RuntimeError("Failed to build benchmark image")
         assert success, "Failed to build benchmark image"

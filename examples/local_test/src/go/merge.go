@@ -88,7 +88,7 @@ func parallelMergesort3(s []int) {
 
 func main() {
     argsWithoutProg := os.Args[1:]
-    num_length, err := strconv.Atoi(argsWithoutProg[1])
+    num_length, err := strconv.Atoi(argsWithoutProg[0])
     if err != nil {
 		fmt.Println(err)
 		return;

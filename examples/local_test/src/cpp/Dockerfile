@@ -4,6 +4,6 @@ WORKDIR /mergesort_example
 ADD . /mergesort_example
 RUN cmake . && cmake --build .
 
-FROM alpine:latest
-COPY --from=builder /mergesort_example/merge /merge
-ENTRYPOINT ["/merge"]
+#FROM alpine:latest
+#COPY --from=builder /mergesort_example/merge .
+ENTRYPOINT ["./merge"]
