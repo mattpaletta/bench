@@ -23,5 +23,5 @@ script:
   - if [ $LITTLE_BOOK == 1]; then examples/little-book-of-semaphores.sh; fi
 
   # Run the local examples
-  - if [ $LOCAL_EXAMPLES == 1 ]; then pip install -r examples/local_test/src/requirements.txt; fi
+  - if [ $LOCAL_EXAMPLES == 1 ]; then pip install -r examples/local_test/requirements.txt; fi
   - if [ $LOCAL_EXAMPLES == 1 ]; then cd examples/local_test && python3 run_test.py; fi
