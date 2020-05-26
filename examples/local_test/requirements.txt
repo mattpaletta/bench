@@ -1,4 +1,4 @@
-docker
-pandas
-matplotlib
-git+git://github.com/mattpaletta/pynotstdlib.git
+docker==4.2.0
+pandas==1.0.3
+matplotlib==3.2.1
+git+git://github.com/mattpaletta/pynotstdlib.git@2638f07877c463cf0327aa0e2c0c9d5b171daef4

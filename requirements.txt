@@ -1,7 +1,7 @@
-docker
-PyYAML
-pandas
-matplotlib
-gitpython
-config-parser
-git+git://github.com/mattpaletta/pynotstdlib.git
+docker==4.2.0
+PyYAML==5.3.1
+pandas==1.0.3
+matplotlib==3.2.1
+gitpython==3.1.2
+config-parser==0.0.1
+git+git://github.com/mattpaletta/pynotstdlib.git@2638f07877c463cf0327aa0e2c0c9d5b171daef4
